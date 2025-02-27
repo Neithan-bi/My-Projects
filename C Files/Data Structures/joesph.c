@@ -6,8 +6,7 @@ int Josephus (int N,int k )
 	{
 		count=(count+k)%i;
         printf("%d",count);
-		i++;
-        
+		i++;  
 	}
 	return count+1;
 }
