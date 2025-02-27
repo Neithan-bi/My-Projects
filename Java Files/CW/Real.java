@@ -24,7 +24,7 @@ class Bicycle implements Vehicle {
         speed -= 3;
     }
     public void printStates(){
-        System.out.printf("Bicycle - Speed : %d \nGear : %d",speed,gear);
+        System.out.printf("Bicycle - Speed : %d \nGear : %d",sp);
     }
 }
 class bike implements Vehicle{
