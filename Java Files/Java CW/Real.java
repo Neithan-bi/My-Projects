@@ -24,12 +24,12 @@ class Bicycle implements Vehicle {
         speed -= 3;
     }
     public void printStates(){
-        System.out.printf("Bicycle - Speed : %d \nGear : %d",sp);
+        System.out.printf("Bicycle - Speed : %d \nGear : %d",speed);
     }
 }
 class bike implements Vehicle{
         int speed , gear;
-
+        
         public bike(int speed, int gear) {
             this.speed = speed;
             this.gear = gear;

@@ -1,9 +1,9 @@
-import java.util.Arrays;
+import java.util.*;
 
 class Racer {
-    private String name;
-    private int raceNumber;
-    private double time;
+    private final String name;
+    private final int raceNumber;
+    private final double time;
 
     public Racer(String name, int raceNumber, double time) {
         this.name = name;
@@ -14,14 +14,14 @@ class Racer {
     public double getTime() {
         return time;
     }
-
+    @Override 
     public String toString() {
         return "Race #" + raceNumber + " - " + name + " - Time: " + time + " sec";
     }
 }
 
 class RankingList {
-    private Racer[] racers = new Racer[100];
+    private final Racer[] racers = new Racer[100];
     private int count = 0;
 
     public void addRacer(Racer racer) {
