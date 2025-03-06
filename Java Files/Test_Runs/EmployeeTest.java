@@ -7,7 +7,7 @@ public class EmployeeTest {
         Employee emp1 = new Employee();
         Scanner in = new Scanner(System.in);
         System.out.println("Enter ID : ");
-        emp1. = in.nextInt();
+        emp1.ID = in.nextInt();
 
         
 
