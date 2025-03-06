@@ -6,7 +6,7 @@ struct Node {
     struct Node* next;
 };
 
-struct Node* insertAtEndSingly(struct Node* head, int data) {
+struct Node* insertAtEnd(struct Node* head, int data) {
     struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
     newNode->data = data;
     newNode->next = NULL;
@@ -56,7 +56,7 @@ struct Node* deleteByPosition(struct Node* head, int pos) {
     return head;
 }
 
-void displaySingly(struct Node* head) {
+void display(struct Node* head) {
     struct Node* temp = head;
     while (temp != NULL) {
         printf("%d -> ", temp->data);
@@ -66,15 +66,14 @@ void displaySingly(struct Node* head) {
 }
 
 int main() {
-    struct Node* singlyHead = NULL;
-    struct DNode* doublyHead = NULL;
+    struct Node* Head = NULL;
     int choice, data, pos;
 
     while (1) {
         printf("\nMenu:\n");
-        printf("1. Insert at end (Singly)\n");
-        printf("2. Delete by value (Singly)\n");
-        printf("3. Delete by position (Singly)\n");
+        printf("1. Insert at end\n");
+        printf("2. Delete by value\n");
+        printf("3. Delete by position\n");
         printf("4. Display Singly List\n");
         printf("5. Exit\n");
         printf("Enter your choice: ");
@@ -84,20 +83,20 @@ int main() {
             case 1:
                 printf("Enter data: ");
                 scanf("%d", &data);
-                singlyHead = insertAtEndSingly(singlyHead, data);
+                Head = insertAtEnd(Head, data);
                 break;
             case 2:
                 printf("Enter value to delete: ");
                 scanf("%d", &data);
-                singlyHead = deleteByValueSingly(singlyHead, data);
+                Head = deleteByValue(Head, data);
                 break;
             case 3:
                 printf("Enter position to delete: ");
                 scanf("%d", &pos);
-                singlyHead = deleteByPositionSingly(singlyHead, pos);
+                Head = deleteByPosition(Head, pos);
                 break;
             case 4:
-                displaySingly(singlyHead);
+                display(Head);
                 break;
             case 5:
                 return 0;

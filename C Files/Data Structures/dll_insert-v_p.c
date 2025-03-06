@@ -7,6 +7,27 @@ struct DNode {
     struct DNode* prev;
 };
 
+struct DNode* insertAtEnd(struct DNode* head, int data) {
+    struct DNode* newNode = (struct DNode*)malloc(sizeof(struct DNode));
+    newNode->data = data;
+    newNode->next = NULL;
+    newNode->prev = NULL;
+
+    if (head == NULL) {
+        return newNode;
+    }
+
+    struct DNode* temp = head;
+    while (temp->next != NULL) {
+        temp = temp->next;
+    }
+
+    temp->next = newNode;
+    newNode->prev = temp;
+
+    return head;
+}
+
 struct DNode* deleteByValue(struct DNode* head, int value) {
     struct DNode* temp = head;
     while (temp != NULL && temp->data != value) {
@@ -38,7 +59,8 @@ struct DNode* deleteByPosition(struct DNode* head, int pos) {
     free(temp);
     return head;
 }
-void displayDoubly(struct DNode* head) {
+
+void display(struct DNode* head) {
     struct DNode* temp = head;
     while (temp != NULL) {
         printf("%d <-> ", temp->data);
@@ -48,15 +70,14 @@ void displayDoubly(struct DNode* head) {
 }
 
 int main() {
-    struct Node* singlyHead = NULL;
-    struct DNode* doublyHead = NULL;
+    struct DNode* Head = NULL;
     int choice, data, pos;
 
     while (1) {
         printf("\nMenu:\n");
-        printf("1. Insert at end (Doubly)\n");
-        printf("2. Delete by value (Doubly)\n");
-        printf("3. Delete by position (Doubly)\n");
+        printf("1. Insert at end\n");
+        printf("2. Delete by value\n");
+        printf("3. Delete by position\n");
         printf("4. Display Doubly List\n");
         printf("5. Exit\n");
         printf("Enter your choice: ");
@@ -66,20 +87,20 @@ int main() {
             case 1:
                 printf("Enter data: ");
                 scanf("%d", &data);
-                doublyHead = insertAtEndDoubly(doublyHead, data);
+                Head = insertAtEnd(Head, data);
                 break;
             case 2:
                 printf("Enter value to delete: ");
                 scanf("%d", &data);
-                doublyHead = deleteByValueDoubly(doublyHead, data);
+                Head = deleteByValue(Head, data);
                 break;
             case 3:
                 printf("Enter position to delete: ");
                 scanf("%d", &pos);
-                doublyHead = deleteByPositionDoubly(doublyHead, pos);
+                Head = deleteByPosition(Head, pos);
                 break;
             case 4:
-                displayDoubly(doublyHead);
+                display(Head);
                 break;
             case 5:
                 return 0;
