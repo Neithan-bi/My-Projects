@@ -18,13 +18,5 @@ class ExceptionHandling {
             System.out.println("Runtime error occured");  } }
         
         in.close();
-
-
-
-
-
-
-
-
     }
 }
