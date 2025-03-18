@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Registration Form</title>
+    <link rel="stylesheet" href="EventReg.css">
+</head>
+<body>
+    <h1>Event Registration Form</h1>
+    <form action="thankyou.html" method="get" enctype="multipart/form-data">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="eventType">Event Type:</label>
+        <select id="eventType" name="eventType" required>
+            <option value="workshop">Workshop</option>
+            <option value="seminar">Seminar</option>
+            <option value="conference">Conference</option>
+            <option value="meetup">Meetup</option>
+        </select>
+
+        <label for="specialRequests">Special Requests:</label>
+        <textarea id="specialRequests" name="specialRequests" rows="4" cols="30"></textarea>
+
+        <label for="idProof">Upload ID Proof:</label>
+        <input type="file" id="idProof" name="idProof" accept=".jpg,.jpeg,.png,.pdf" required>
+
+        
+            <button type="submit">Register</button>
+    </form>
+</body>
+</html>

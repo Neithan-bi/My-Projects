@@ -1,0 +1,16 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Ensures the content takes up the full viewport height */
+    margin: 0; /* Resets default margin */
+    text-align: center; /* Centers the text inside elements */
+    flex-direction: column; /* Aligns elements vertically */
+}
+
+h1 {
+    text-align: center; }
+.info input {
+    flex: 1; 
+    padding: 5px; 
+    box-sizing: border-box; }

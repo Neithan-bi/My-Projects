@@ -1,0 +1,77 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration Form</title>
+    <link rel = "stylesheet" href = "std.css">
+
+</head>
+<body>
+    <h1>Student Registration Form</h1>
+    <h1 style = "text-align: center;">
+    <hr>
+    <p style = "text-align: center;">Fill out the form to apply for the training courses. You can consider your application accepted after you receive a confirmation email.</p>
+    <h2>Student Informartion</h2>
+    <div class = "info">
+    <form action = "#" method = "post">
+        <label for = "name">Name:</label>
+        <input type="text" id="name" name="name" placeholder="Your Name" required 
+       pattern="[A-Za-z\s]+" title="Name should contain only letters.">
+        <br><br>
+
+        <label for = "Email">Email:</label>
+        <input placeholder = "Your Email" type = "text" id="Email" name="Email" required>
+        <br><br>
+
+        <label for = "Student ID">Student ID:</label>
+        <input placeholder = "Your Student ID" type = "text" pattern = "[0-9]{7}"id="Student ID" 
+        title="Student ID should contain only Numbers." name="Student ID" required>
+        <br><br>
+        
+        <label for = "DOB">DOB:</label>
+        <input placeholder = "Your DOB" type = "text" id="DOB" name="DOB" required>
+        <br><br>
+
+        <label for = "Phone">Phone:</label>
+        <input  type = "tel" id="Phone" name="Phone" pattern = "[0-9]{10}" required>
+        <small>(Enter a 10-digit phone number)</small>
+        <br><br>
+        
+        <label for = "Department">Department:</label>
+        <select id="department" name="department" required>
+            <option value="">Select Department</option>
+            <option value="CSE">Computer Science</option>
+            <option value="ECE">Electronics</option>
+            <option value="ME">Mechanical</option>
+            <option value="CE">Civil</option>
+        </select>
+        <br><br>
+
+        <label>Hobbies:</label><br>
+        <input type="checkbox" id="hob1" name = "Hobbies" value = "Sports">
+        <label for="hobby1">Sports</label><br>
+        <input type="checkbox" id="hob2" name = "Hobbies" value = "Tennis">
+        <label for="hobby1">Tennis</label><br>
+        <input type="checkbox" id="hob3" name = "Hobbies" value = "Cricket">
+        <label for="hobby1">Cricket</label><br><br>
+
+        <label>Gender:</label><br>
+        <input type="radio" id="male" name="gender" value="Male" required>
+        <label for="male">Male</label><br>
+        <input type="radio" id="female" name="gender" value="Female" required>
+        <label for="female">Female</label><br>
+        <input type="radio" id="other" name="gender" value="Other" required>
+        <label for="other">Other</label><br><br>
+
+        <button type="submit">Register</button>
+
+
+
+
+
+    </form>
+</div>
+</body>
+</html>

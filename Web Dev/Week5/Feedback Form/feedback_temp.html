@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Form</title>
+    <link rel="stylesheet" href="feedback.css">
+</head>
+<body>
+    <h1>Feedback Form</h1>
+    <form action="thankyou.html" method="get" enctype="multipart/form-data">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br><br>
+
+        <label>Rating:</label><br>
+        <input type="radio" id="1star" name="rating" value="1" required>
+        <label for="1star">1 Star</label><br>
+        <input type="radio" id="2stars" name="rating" value="2" required>
+        <label for="2stars">2 Stars</label><br>
+        <input type="radio" id="3stars" name="rating" value="3" required>
+        <label for="3stars">3 Stars</label><br>
+        <input type="radio" id="4stars" name="rating" value="4" required>
+        <label for="4stars">4 Stars</label><br>
+        <input type="radio" id="5stars" name="rating" value="5" required>
+        <label for="5stars">5 Stars</label><br><br>
+
+        <label for="comments">Comments:</label><br>
+        <textarea id="comments" name="comments" rows="4" cols="50"></textarea><br><br>
+
+        <input type="submit" value="Submit">
+    </form>
+    <p>Thank you for your feedback!</p>
+</body>
+</html>

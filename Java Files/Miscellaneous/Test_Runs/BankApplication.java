@@ -12,6 +12,7 @@ class Bank {
         }
     }
 
+    
     public synchronized  void deposit(int amount) {
         balance += amount;
         System.out.println("Deposited: " + amount + ", New Balance: " + balance);
@@ -86,6 +87,4 @@ public class BankApplication {
         }
     }
 }
-        
-        
         
