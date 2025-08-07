@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>COVID-19 Dashboard - Home</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar container">
+      <a href="index.html" class="logo"><span class="typewriter">COVID-19</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="state-comparison.html">States</a></li>
+        <li><a href="infrastructure-impact.html">Infrastructure</a></li>
+        <li><a href="age-impact.html">Age Impact</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+    </nav>
+  </header>
+  <section class="hero">
+    <h1>COVID-19</h1>
+    <p>
+      COVID-19 was first identified in December 2019 and was declared a global pandemic within months. 
+      It became the second-leading cause of death in 2021, causing a global decline in life expectancy.
+    </p>
+  </section>
+
+  <!-- Power BI Report Embed -->
+  <div class="dashboard-iframe-fullwidth">
+    <iframe 
+      title="Power BI Report"
+      width="100vw"
+      height="700"
+      src="https://app.powerbi.com/view?r=eyJrIjoiNzlhYWIzZmUtZmMwYS00YzkyLWE5YjItYmM5YjlhZjE5MzkyIiwidCI6ImVkYjYxOTg5LTc1NmEtNDc0OS04MDRmLWU3YzUxZmMxOTI4YiJ9"
+      frameborder="0"
+      allowFullScreen="true"
+      style="display:block; margin:0 auto; border:none;">
+    </iframe>
+    <!-- Optional: Overlay to try to cover the Power BI logo -->
+    <div class="powerbi-logo-cover"></div>
+  </div>
+
+  <section class="hero-secondary">
+    <div class="hero-text">
+      <h1>
+        <span class="stay-informed">Stay Informed</span><br>
+        <span class="stay-safe">Stay Safe.</span>
+      </h1>
+      <p>Real-time COVID-19 data tracking, resources, and prevention guidance for public awareness.</p>
+      <a href="dashboard.html" class="btn">View Dashboard</a>
+    </div>
+  </section>
+
+  <main class="container">
+    <section class="case-types">
+      <h2>Key Statistics</h2>
+      <div class="cards">
+        <article class="card">
+          <img src="https://cdn-icons-png.flaticon.com/512/2913/2913601.png" alt="Confirmed Cases" />
+          <h3>Confirmed</h3>
+          <p>Track the latest number of confirmed COVID-19 cases worldwide and regionally.</p>
+        </article>
+        <article class="card">
+          <img src="https://cdn-icons-png.flaticon.com/512/2913/2913603.png" alt="Recovered" />
+          <h3>Recovered</h3>
+          <p>See the growing number of individuals who have recovered from the virus.</p>
+        </article>
+        <article class="card">
+          <img src="https://cdn-icons-png.flaticon.com/512/2913/2913604.png" alt="Deaths" />
+          <h3>Deaths</h3>
+          <p>Data on lives lost to COVID-19 to understand its global and local impact.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="about-summary">
+      <h2>About This Dashboard</h2>
+      <p>This website offers live COVID-19 updates, region-specific charts, and prevention information to help you and your community stay protected and aware.</p>
+      <a href="about.html" class="btn btn-secondary">Read More</a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>© 2025 COVID-19 Awareness Portal | Powered by Public Health Data</p>
+  </footer>
+
+  <div class="wave-bg"></div>
+</body>
+</html>

@@ -1,0 +1,1 @@
+ name[strcspn(name, "\n")] = '\0';

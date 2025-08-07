@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>COVID-19 Dashboard - Infrastructure</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar container">
+      <a href="index.html" class="logo"><span class="typewriter">COVID-19</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="state-comparison.html">States</a></li>
+        <li><a href="infrastructure-impact.html" class="active">Infrastructure</a></li>
+        <li><a href="age-impact.html">Age Impact</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>Health Infrastructure Vs COVID Impact</h1>
+    <div class="about-card infra-animate">
+      <h2>Animated Scatter Plot</h2>
+      <p>
+        This dynamic chart visualizes the relationship between hospital beds (X-axis), COVID-19 cases (Y-axis), and deaths (bubble size) over time. Users can play through the timeline to observe how states evolve in terms of health infrastructure and case impact.
+      </p>
+    </div>
+    <div class="about-card infra-animate" style="animation-delay:0.15s;">
+      <h2>Scroller / Table View</h2>
+      <p>
+        A scrollable comparison table that displays public health infrastructure (like hospitals, beds, ICUs) alongside COVID-19 metrics (cases, deaths, recovery rates), offering a side-by-side analytical view for informed insights.
+      </p>
+    </div>
+  </main>
+
+  <!-- Full-width iframe below content -->
+  <div class="dashboard-iframe-fullwidth">
+    <iframe 
+      title="Power BI Infrastructure Impact"
+      width="100vw"
+      height="700"
+      src="https://app.powerbi.com/view?r=eyJrIjoiZDE2Mjc4OWEtOWJmNC00NWQ5LWE5MjYtNGZhNjY0YzExYTE3IiwidCI6ImVkYjYxOTg5LTc1NmEtNDc0OS04MDRmLWU3YzUxZmMxOTI4YiJ9"
+      frameborder="0"
+      allowFullScreen="true"
+      style="display:block; margin:0 auto; border:none;">
+    </iframe>
+    <!-- Optional: Overlay to cover Power BI logo -->
+    <div class="powerbi-logo-cover"></div>
+  </div>
+
+  <footer class="site-footer">
+    <p>© 2025 COVID-19 Awareness Portal | Powered by Public Health Data</p>
+  </footer>
+  <div class="wave-bg"></div>
+</body>
+</html>

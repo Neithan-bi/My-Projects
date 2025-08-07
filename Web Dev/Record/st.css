@@ -1,0 +1,41 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+.header {
+    color: blue;
+    text-align: center;
+}
+
+.text {
+    font-size: 18px;
+    color: darkred;
+}
+
+.container {
+    background-color: lightgray;
+    padding: 10px;
+}
+
+.relative {
+    position: relative;
+    left: 20px;
+    background: yellow;
+}
+
+.absolute {
+    position: absolute;
+    top: 50px;
+    left: 50px;
+    background: orange;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+}

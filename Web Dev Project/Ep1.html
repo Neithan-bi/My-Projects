@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SRMC Sem 2 Internship</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      background-color: #f5f7fa;
+      scroll-behavior: smooth;
+      color: #333;
+    }
+
+    /* Navbar */
+    nav {
+      background: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .nav-container {
+      max-width: 1100px;
+      margin: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 1.5rem;
+    }
+    nav ul li a {
+      text-decoration: none;
+      color: #1976d2;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+    nav ul li a:hover {
+      color: #0d47a1;
+    }
+
+    header {
+      background: linear-gradient(120deg, #0055a5, #1976d2);
+      color: white;
+      padding: 3rem 1rem 5rem;
+      text-align: center;
+    }
+
+    header img.hero {
+      width: 100%;
+      max-height: 300px;
+      object-fit: cover;
+      margin-top: 1rem;
+      border-radius: 10px;
+    }
+
+    header h1 {
+      font-size: 2.8rem;
+    }
+    header p {
+      font-size: 1.2rem;
+      margin-top: 0.5rem;
+    }
+
+    section {
+      max-width: 1000px;
+      margin: 3rem auto;
+      padding: 1rem;
+    }
+
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #1976d2;
+    }
+
+    /* About Cards */
+    .about-cards {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+    .card {
+      flex: 1;
+      min-width: 280px;
+      background: white;
+      padding: 1.5rem;
+      border-left: 6px solid #1976d2;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .card h3 {
+      margin-bottom: 1rem;
+    }
+
+    .card ul {
+      padding-left: 1.2rem;
+    }
+
+    /* Managers Grid */
+    .dept-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .dept-card {
+      background: white;
+      padding: 1rem;
+      border-left: 4px solid #1976d2;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    /* Form & Confirmation */
+    form {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      margin-top: 1rem;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 0.75rem;
+      margin: 0.8rem 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #1976d2;
+      color: white;
+      padding: 0.7rem 1.4rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #125ea4;
+    }
+
+    .confirmation {
+      margin-top: 1.2rem;
+      padding: 1rem;
+      background-color: #e1f7d5;
+      border-left: 4px solid #4caf50;
+      border-radius: 6px;
+      display: none;
+    }
+
+    /* Contact */
+    #contact ul {
+      list-style: none;
+      margin-top: 1rem;
+    }
+
+    #contact ul li {
+      margin-bottom: 0.6rem;
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 2rem;
+      }
+
+      .nav-container {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      nav ul {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-container">
+      <h2>SRMC Internship</h2>
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#register">Register</a></li>
+        <li><a href="#managers">Managers</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <header id="home">
+    <h1>Semester 2 Internship Program</h1>
+    <p>Organized by Sri Ramachandra Institute of Higher Education and Research</p>
+    <img class="hero" src="https://images.unsplash.com/photo-1581091012184-5c94b27c0b34?fit=crop&w=1200&q=80" alt="Internship Event Banner">
+  </header>
+
+  <section id="about">
+    <h2>About the Internship</h2>
+    <p>This program offers <strong>Internal</strong> and <strong>External</strong> internship opportunities tailored for Semester 2 students.</p>
+
+    <div class="about-cards">
+      <div class="card">
+        <h3>🔸 Internal Internship</h3>
+        <ul>
+          <li>Conducted within Sri Ramachandra Campus</li>
+          <li>Guided by College Professors</li>
+          <li>Access to labs, clinical data & tools</li>
+          <li>Ideal for academic exposure</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>🔹 External Internship</h3>
+        <ul>
+          <li>Partnered with hospitals or tech firms</li>
+          <li>College-assisted coordination</li>
+          <li>Independent real-world learning</li>
+          <li>Exposure to industry environments</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="register">
+    <h2>Register Now</h2>
+    <p>Fill in your details to participate in the Semester 2 Internship program.</p>
+
+    <form id="registrationForm">
+      <input type="text" id="name" placeholder="Full Name" required>
+      <input type="email" id="email" placeholder="Email Address" required>
+      <input type="text" id="department" placeholder="Department (e.g., AI/ML)" required>
+      <textarea id="message" placeholder="Why are you interested? (Optional)" rows="4"></textarea>
+      <button type="submit">Submit</button>
+    </form>
+
+    <div class="confirmation" id="confirmationMessage">
+      ✅ Thank you for registering! You'll receive a confirmation email shortly.
+    </div>
+  </section>
+
+  <section id="managers">
+    <h2>Department Managers</h2>
+    <div class="dept-grid">
+      <div class="dept-card">
+        <h3>AI / ML</h3>
+        <p>📞 John Mathew – +91 98765 43210</p>
+      </div>
+      <div class="dept-card">
+        <h3>AI / DA</h3>
+        <p>📞 Aarthi Raj – +91 98765 12345</p>
+      </div>
+      <div class="dept-card">
+        <h3>Medical Engineering</h3>
+        <p>📞 Vivek Anand – +91 99887 66554</p>
+      </div>
+      <div class="dept-card">
+        <h3>Cybersecurity</h3>
+        <p>📞 Divya Sree – +91 91234 87654</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <h2>Contact Us</h2>
+    <p>If you have any questions, feel free to reach out:</p>
+    <ul>
+      <li>📧 Email: internships@sriramachandra.edu.in</li>
+      <li>📞 Phone: +91 90909 11223</li>
+    </ul>
+  </section>
+
+  <script>
+    const form = document.getElementById('registrationForm');
+    const confirmation = document.getElementById('confirmationMessage');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      confirmation.style.display = 'block';
+      form.reset();
+    });
+  </script>
+</body>
+</html>

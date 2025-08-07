@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>COVID-19 Dashboard - Age Impact</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar container">
+      <a href="index.html" class="logo"><span class="typewriter">COVID-19</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="state-comparison.html">States</a></li>
+        <li><a href="infrastructure-impact.html">Infrastructure</a></li>
+        <li><a href="age-impact.html" class="active">Age Impact</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>COVID-19 Impact by Age Group</h1>
+    <div class="about-card infra-animate">
+      <h2>Sunburst Chart</h2>
+      <p>
+        Visualizes the distribution of COVID-19 cases across age groups. The chart breaks down total cases into segments, showing each group's share as a percentage of the overall total in a clear, layered format.
+      </p>
+    </div>
+    <div class="about-card infra-animate" style="animation-delay:0.15s;">
+      <h2>Histogram</h2>
+      <p>
+        Displays the number of COVID-19 cases across different age groups. Helps identify which age ranges are most affected by showing case counts in a simple, comparative bar format.
+      </p>
+    </div>
+  </main>
+
+  <!-- Full-width iframe below content -->
+  <div class="dashboard-iframe-fullwidth">
+    <iframe 
+      title="Power BI Age Impact Report"
+      width="100vw"
+      height="700"
+      src="https://app.powerbi.com/view?r=eyJrIjoiMGViYWIyZjYtNGY3NC00YzNjLWI2MDAtNTgzMjdkMTJhMmM1IiwidCI6ImVkYjYxOTg5LTc1NmEtNDc0OS04MDRmLWU3YzUxZmMxOTI4YiJ9"
+      frameborder="0"
+      allowFullScreen="true"
+      style="display:block; margin:0 auto; border:none;">
+    </iframe>
+    <div class="powerbi-logo-cover"></div>
+  </div>
+
+  <footer class="site-footer">
+    <p>© 2025 COVID-19 Awareness Portal | Powered by Public Health Data</p>
+  </footer>
+  <div class="wave-bg"></div>
+</body>
+</html>

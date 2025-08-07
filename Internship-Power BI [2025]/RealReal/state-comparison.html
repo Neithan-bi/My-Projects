@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>COVID-19 Dashboard - States</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar container">
+      <a href="index.html" class="logo"><span class="typewriter">COVID-19</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="state-comparison.html" class="active">States</a></li>
+        <li><a href="infrastructure-impact.html">Infrastructure</a></li>
+        <li><a href="age-impact.html">Age Impact</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <div class="side-by-side-section">
+    <div class="iframe-col">
+      <iframe 
+        title="Power BI State Comparison"
+        width="100%" 
+        height="500"
+        src="https://app.powerbi.com/view?r=eyJrIjoiOTFkMTRmOTAtNzg2Ny00NjZkLWJiMzMtM2M4ZTMzMzdlMGQzIiwidCI6ImVkYjYxOTg5LTc1NmEtNDc0OS04MDRmLWU3YzUxZmMxOTI4YiJ9"
+        frameborder="0"
+        allowFullScreen="true">
+      </iframe>
+    </div>
+    <div class="content-col">
+      <h2>Drill-down Column Chart</h2>
+      <p>
+        This interactive chart allows users to explore COVID-19 data hierarchically. You can click on a state to drill down and view detailed metrics by district (if available). In cases where district-level data isn't present, the chart shows other metric types such as active, recovered, and deceased cases. This enhances user insights by enabling a deeper, region-specific analysis.
+      </p>
+    </div>
+  </div>
+
+  <!-- New section: content left, iframe right -->
+  <div class="side-by-side-section">
+    <div class="content-col">
+      <h2>Word Cloud</h2>
+      <p>
+        States are visualized as words, with their size reflecting the selected metric—like active cases or deaths. Larger names indicate higher values, making it easy to spot trends at a glance.
+      </p>
+    </div>
+    <div class="iframe-col">
+      <iframe 
+        title="Power BI Word Cloud"
+        width="100%" 
+        height="600"
+        src="https://app.powerbi.com/view?r=eyJrIjoiZGJiNDI5OTUtNTI3YS00Njc2LTg5MmUtZjJiNDFmMDU3MDhmIiwidCI6ImVkYjYxOTg5LTc1NmEtNDc0OS04MDRmLWU3YzUxZmMxOTI4YiJ9"
+        frameborder="0"
+        allowFullScreen="true">
+      </iframe>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>© 2025 COVID-19 Awareness Portal | Powered by Public Health Data</p>
+  </footer>
+
+  <div class="wave-bg"></div>
+</body>
+</html>

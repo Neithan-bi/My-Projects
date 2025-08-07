@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>COVID-19 Dashboard - Trends</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="site-header">
+    <nav class="navbar container">
+      <a href="index.html" class="logo"><span class="typewriter">COVID-19</span></a>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="state-comparison.html">States</a></li>
+        <li><a href="infrastructure-impact.html">Infrastructure</a></li>
+        <li><a href="age-impact.html">Age Impact</a></li>
+        <li><a href="time-trend.html" class="active">Trends</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>Time Trend</h1>
+    <p>View the progression of COVID-19 cases, recoveries, and deaths over time.</p>
+    <div class="about-card infra-animate">
+      <h2>Animated Bar Chart</h2>
+      <p>
+        Displays weekly changes in COVID-19 cases per state. Bars dynamically shift to highlight trends over time, making it easy to compare how states are progressing week by week.
+      </p>
+    </div>
+    <div class="about-card infra-animate" style="animation-delay:0.15s;">
+      <h2>Scroller / Timeline</h2>
+      <p>
+        An interactive slider lets users navigate through specific dates. Easily explore how the situation evolved over time by scrolling through daily or weekly data.
+      </p>
+    </div>
+  </main>
+
+  <!-- Full-width Power BI iframe below content -->
+  <div class="dashboard-iframe-fullwidth">
+    <iframe 
+      title="Power BI Time Trend"
+      width="100vw"
+      height="700"
+      src="https://app.powerbi.com/view?r=YOUR_TIME_TREND_REPORT_LINK"
+      frameborder="0"
+      allowFullScreen="true"
+      style="display:block; margin:0 auto; border:none;">
+    </iframe>
+    <div class="powerbi-logo-cover"></div>
+  </div>
+
+  <footer class="site-footer">
+    <p>© 2025 COVID-19 Awareness Portal | Powered by Public Health Data</p>
+  </footer>
+  <div class="wave-bg"></div>
+</body>
+</html>
