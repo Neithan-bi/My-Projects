@@ -1,0 +1,26 @@
+{
+  "name": "code-files",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Neithan-bi/My-Projects.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Neithan-bi/My-Projects/issues"
+  },
+  "homepage": "https://github.com/Neithan-bi/My-Projects#readme",
+  "dependencies": {
+    "mongoose": "^8.19.0"
+  }
+}

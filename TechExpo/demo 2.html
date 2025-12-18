@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Floor Plan Creator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <!-- Add Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <!-- Add OrbitControls script if not present -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/controls/OrbitControls.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .canvas-container {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            margin: auto;
+        }
+        .tool-btn.active {
+            background-color: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4f46e5;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Style for the dropdown arrow */
+        details > summary {
+            list-style: none; /* Hide the default marker */
+        }
+        details > summary::-webkit-details-marker {
+            display: none; /* Hide the default marker in Chrome */
+        }
+        details[open] > summary .details-arrow {
+            transform: rotate(180deg);
+        }
+        input:disabled, button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4">
+        <header class="text-center mb-6">
+            <h1 class="text-4xl font-bold text-gray-900">AI Floor Plan Creator</h1>
+            <p class="text-lg text-gray-600 mt-2">Design your 2D floor plan and generate a 3D model with AI</p>
+        </header>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Toolbar -->
+            <div class="w-full lg:w-1/5 bg-white p-4 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4 border-b pb-2">Actions</h2>
+                <div class="grid grid-cols-2 gap-2 mb-4">
+                    <button id="undo-btn" class="p-2 bg-gray-200 rounded-lg hover:bg-indigo-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed" title="Undo">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <button id="redo-btn" class="p-2 bg-gray-200 rounded-lg hover:bg-indigo-500 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed" title="Redo">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                    <button id="save-btn" class="p-2 bg-gray-200 rounded-lg hover:bg-indigo-500 hover:text-white" title="Save">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    </button>
+                    <button id="load-btn" class="p-2 bg-gray-200 rounded-lg hover:bg-indigo-500 hover:text-white" title="Load">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                    </button>
+                    <input type="file" id="load-input" class="hidden" accept=".json">
+                </div>
+                 <h2 class="text-xl font-semibold mb-4 border-b pb-2">Grid Controls</h2>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium">Zoom</span>
+                         <input type="range" id="zoom-slider" min="0.2" max="3" step="0.1" value="1" class="w-2/3">
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium">Pan</span>
+                        <div class="grid grid-cols-3 gap-1">
+                            <div></div>
+                            <button id="pan-up-btn" class="p-1 bg-gray-200 rounded-md hover:bg-indigo-500 hover:text-white">↑</button>
+                            <div></div>
+                            <button id="pan-left-btn" class="p-1 bg-gray-200 rounded-md hover:bg-indigo-500 hover:text-white">←</button>
+                            <div></div>
+                            <button id="pan-right-btn" class="p-1 bg-gray-200 rounded-md hover:bg-indigo-500 hover:text-white">→</button>
+                            <div></div>
+                            <button id="pan-down-btn" class="p-1 bg-gray-200 rounded-md hover:bg-indigo-500 hover:text-white">↓</button>
+                            <div></div>
+                        </div>
+                    </div>
+                     <div class="flex items-center justify-between">
+                        <label for="grid-toggle" class="text-sm font-medium">Show Grid</label>
+                        <input type="checkbox" id="grid-toggle" class="form-checkbox h-5 w-5 text-indigo-600" checked>
+                    </div>
+                     <div class="flex items-center justify-between">
+                        <label for="labels-toggle" class="text-sm font-medium">Show Labels</label>
+                        <input type="checkbox" id="labels-toggle" class="form-checkbox h-5 w-5 text-indigo-600" checked>
+                    </div>
+                </div>
+                 <h2 class="text-xl font-semibold mt-4 mb-4 border-b pb-2">Tools</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <button id="select-tool" class="tool-btn p-3 bg-gray-200 border border-gray-300 hover:bg-indigo-500 hover:text-white rounded-lg transition-colors duration-200 flex flex-col items-center justify-center active">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        <span>Select</span>
+                    </button>
+                    <button id="wall-tool" class="tool-btn p-3 bg-gray-200 border border-gray-300 hover:bg-indigo-500 hover:text-white rounded-lg transition-colors duration-200 flex flex-col items-center justify-center">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5l-8 4.5v10l8 4.5 8-4.5v-10l-8-4.5zM2 7l10 5.5L22 7"/><path d="M12 22V12.5"/></svg>
+                        <span>Wall</span>
+                    </button>
+                    <button id="free-draw-tool" class="tool-btn p-3 bg-gray-200 border border-gray-300 hover:bg-indigo-500 hover:text-white rounded-lg transition-colors duration-200 flex flex-col items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" /></svg>
+                        <span>Free Draw</span>
+                    </button>
+                    <button id="main-door-tool" class="tool-btn p-3 bg-gray-200 border border-gray-300 hover:bg-indigo-500 hover:text-white rounded-lg transition-colors duration-200 flex flex-col items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v14"/><path d="M10 12h4"/><path d="M12 3v1"/></svg>
+                        <span>Main Door</span>
+                    </button>
+                    <button id="door-tool" class="tool-btn p-3 bg-gray-200 border border-gray-300 hover:bg-indigo-500 hover:text-white rounded-lg transition-colors duration-200 flex flex-col items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v14"/><path d="M10 12h4"/></svg>
+                        <span>Door</span>
+                    </button>
+                    <button id="window-tool" class="tool-btn p-3 bg-gray-200 border border-gray-300 hover:bg-indigo-500 hover:text-white rounded-lg transition-colors duration-200 flex flex-col items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-1.5 0-3 1.5-3 3v12c0 1.5 1.5 3 3 3s3-1.5 3-3V6c0-1.5-1.5-3-3-3z"/><path d="M3 12h18"/></svg>
+                        <span>Window</span>
+                    </button>
+                    <button id="master-bedroom-tool" class="tool-btn p-3 bg-gray-200 border border-gray-300 hover:bg-indigo-500 hover:text-white rounded-lg transition-colors duration-200 flex flex-col items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H9v-8h6v8z" /></svg>
+                        <span>Master Bed</span>
+                    </button>
+                     <button id="bedroom-tool" class="tool-btn p-3 bg-gray-200 border border-gray-300 hover:bg-indigo-500 hover:text-white rounded-lg transition-colors duration-200 flex flex-col items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M6 21v-2m12 2v-2M12 3v6" /></svg>
+                        <span>Bedroom</span>
+                    </button>
+                    <button id="bathroom-tool" class="tool-btn p-3 bg-gray-200 border border-gray-300 hover:bg-indigo-500 hover:text-white rounded-lg transition-colors duration-200 flex flex-col items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16v4m-2-2h4m2 10h2v2h-2v-2m-4-4h2v2h-2v-2m-4-4h2v2H7v-2m10 0h2v2h-2v-2z" /></svg>
+                        <span>Bathroom</span>
+                    </button>
+                    <button id="kitchen-tool" class="tool-btn p-3 bg-gray-200 border border-gray-300 hover:bg-indigo-500 hover:text-white rounded-lg transition-colors duration-200 flex flex-col items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v18" /></svg>
+                        <span>Kitchen</span>
+                    </button>
+                    <button id="dining-room-tool" class="tool-btn p-3 bg-gray-200 border border-gray-300 hover:bg-indigo-500 hover:text-white rounded-lg transition-colors duration-200 flex flex-col items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h18M3 12h18M3 19h18" /></svg>
+                        <span>Dining Room</span>
+                    </button>
+                    <button id="living-room-tool" class="tool-btn p-3 bg-gray-200 border border-gray-300 hover:bg-indigo-500 hover:text-white rounded-lg transition-colors duration-200 flex flex-col items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                        <span>Living Room</span>
+                    </button>
+                    <button id="hallway-tool" class="tool-btn p-3 bg-gray-200 border border-gray-300 hover:bg-indigo-500 hover:text-white rounded-lg transition-colors duration-200 flex flex-col items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16v8H4z" /></svg>
+                        <span>Hallway</span>
+                    </button>
+                    <button id="garden-tool" class="tool-btn p-3 bg-gray-200 border border-gray-300 hover:bg-indigo-500 hover:text-white rounded-lg transition-colors duration-200 flex flex-col items-center justify-center">
+                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 15.879A3 3 0 0112.02 17.9a3 3 0 01-2.121-.879m-1.415-1.414A3 3 0 016.364 12a3 3 0 01.879-2.121m1.414-1.415A3 3 0 0112 6.364a3 3 0 012.121.879m1.415 1.414A3 3 0 0117.636 12a3 3 0 01-.879 2.121M12 3v1m0 16v1m-8-9H3m16 0h-1" /></svg>
+                        <span>Garden</span>
+                    </button>
+                    <button id="balcony-tool" class="tool-btn p-3 bg-gray-200 border border-gray-300 hover:bg-indigo-500 hover:text-white rounded-lg transition-colors duration-200 flex flex-col items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11l7-7 7 7M5 19h14" /></svg>
+                        <span>Balcony</span>
+                    </button>
+                    <button id="custom-tool" class="tool-btn p-3 bg-gray-200 border border-gray-300 hover:bg-indigo-500 hover:text-white rounded-lg transition-colors duration-200 flex flex-col items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <span>Custom</span>
+                    </button>
+                </div>
+                 <div class="mt-6 space-y-2">
+                    <button id="delete-btn" class="w-full p-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
+                        Delete Selected
+                    </button>
+                    <button id="clear-btn" class="w-full p-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700" title="Clear All">
+                       Clear Canvas
+                    </button>
+                </div>
+            </div>
+
+            <!-- Canvas -->
+            <div class="flex-1 bg-white p-2 rounded-lg shadow-md flex justify-center items-center relative">
+                <div class="absolute top-2 left-2 w-16 h-16 bg-white p-2 rounded-full shadow-lg flex items-center justify-center">
+                    <div class="relative w-full h-full">
+                        <div class="absolute top-0 left-1/2 -translate-x-1/2 text-xs font-bold">N</div>
+                        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs font-bold">S</div>
+                        <div class="absolute top-1/2 left-0 -translate-y-1/2 text-xs font-bold">W</div>
+                        <div class="absolute top-1/2 right-0 -translate-y-1/2 text-xs font-bold">E</div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v2m0 16v2m-8-9H2m18 0h-2m-2.93-7.07l-1.42-1.42m-9.9 9.9l-1.42-1.42M20.93 7.07l-1.42 1.42m-9.9 9.9l-1.42 1.42" /></svg>
+                        </div>
+                    </div>
+                </div>
+                <canvas id="canvas"></canvas>
+            </div>
+
+            <!-- AI & Properties Panel -->
+            <div class="w-full lg:w-1/4 bg-white p-4 rounded-lg shadow-md">
+                <div id="api-key-warning" class="mb-4 p-3 bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-lg hidden">
+                    <strong>Action Required:</strong> Please add your Google AI API key in the script to enable AI features.
+                </div>
+                <h2 class="text-xl font-semibold mb-4 border-b pb-2">AI Generator</h2>
+                 <div class="mb-4">
+                    <label for="ai-prompt" class="block text-sm font-medium text-gray-700 mb-1">Describe your floor plan</label>
+                    <textarea id="ai-prompt" rows="4" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., A 2-bedroom apartment with a large living room and a balcony."></textarea>
+                </div>
+                <button id="generate-plan-btn" class="w-full p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 flex items-center justify-center disabled:bg-gray-400 disabled:cursor-not-allowed">
+                    <span id="generate-plan-btn-text">Generate 2D Plan</span>
+                    <div id="generate-plan-loader" class="loader hidden"></div>
+                </button>
+
+                <h2 class="text-xl font-semibold mt-6 mb-4 border-b pb-2">Properties</h2>
+                <div id="properties-panel" class="space-y-2 max-h-96 overflow-y-auto">
+                    <p class="text-gray-500">Select an object to see its properties.</p>
+                </div>
+
+                 <div class="mt-6 pt-4 border-t">
+                     <button id="generate-3d-btn" class="w-full p-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center" disabled>
+                        <span id="generate-3d-btn-text">Generate 3D Model</span>
+                        <div id="generate-3d-loader" class="loader hidden"></div>
+                    </button>
+                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3D Model Modal -->
+    <div id="modal-3d" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-11/12 max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-semibold">Generated 3D Model</h3>
+                <button id="close-modal-btn" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
+            </div>
+            <div id="modal-content" class="text-center">
+                <div id="image-loader" class="flex justify-center items-center h-96">
+                    <div class="loader" style="width: 50px; height: 50px; border-top-color: #4f46e5;"></div>
+                </div>
+                <img id="generated-image" src="" alt="Generated 3D Model" class="max-w-full h-auto rounded-lg hidden">
+                <p id="error-message" class="text-red-500 hidden"></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Generic Message Modal -->
+    <div id="message-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-11/12 max-w-md">
+            <h3 id="message-modal-title" class="text-xl font-semibold mb-4">Notification</h3>
+            <p id="message-modal-text" class="mb-6"></p>
+            <button id="message-modal-close" class="w-full p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">OK</button>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- IMPORTANT: API KEY CONFIGURATION ---
+            const apiKey = "AIzaSyAoni3XaTw6os02r8BtDGjVf8U81MknO5U";
+
+            // --- Measurement Configuration ---
+            const PIXELS_PER_METER = 20;
+
+            const canvas = new fabric.Canvas('canvas', {
+                width: 800,
+                height: 600,
+                backgroundColor: '#f9fafb',
+                selection: true,
+            });
+
+            let currentTool = 'select';
+            let isDrawing = false;
+            let startPoint = null;
+            let currentObject = null;
+            const snapSize = 20;
+            let customObjectType = '';
+
+            // --- History Management ---
+            let history = [];
+            let redoStack = [];
+            let isUpdatingState = false;
+
+            // --- UI Elements ---
+            const apiKeyWarning = document.getElementById('api-key-warning');
+            const generatePlanBtn = document.getElementById('generate-plan-btn');
+            const generate3dBtn = document.getElementById('generate-3d-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            const propertiesPanel = document.getElementById('properties-panel');
+            const undoBtn = document.getElementById('undo-btn');
+            const redoBtn = document.getElementById('redo-btn');
+            const saveBtn = document.getElementById('save-btn');
+            const loadBtn = document.getElementById('load-btn');
+            const loadInput = document.getElementById('load-input');
+
+            const gridToggle = document.getElementById('grid-toggle');
+
+            // --- API Key Check ---
+            if (apiKey === "YOUR_API_KEY_HERE" || !apiKey) {
+                apiKeyWarning.classList.remove('hidden');
+                generatePlanBtn.disabled = true;
+                generate3dBtn.disabled = true;
+            }
+
+
+            // --- Grid ---
+            function drawGrid() {
+                const gridGroup = new fabric.Group([], { selectable: false, evented: false, name: 'grid' });
+                for (let i = 0; i < (canvas.width / snapSize); i++) {
+                    const lineX = new fabric.Line([i * snapSize, 0, i * snapSize, canvas.height], { stroke: '#e2e8f0', selectable: false });
+                    gridGroup.addWithUpdate(lineX);
+                }
+                for (let i = 0; i < (canvas.height / snapSize); i++) {
+                    const lineY = new fabric.Line([0, i * snapSize, canvas.width, i * snapSize], { stroke: '#e2e8f0', selectable: false });
+                    gridGroup.addWithUpdate(lineY);
+                }
+                canvas.add(gridGroup);
+                gridGroup.moveTo(-1); // Send to back
+            }
+            drawGrid();
+            
+            // Grid Controls
+            document.getElementById('zoom-slider').addEventListener('input', (e) => {
+                canvas.setZoom(parseFloat(e.target.value));
+                drawGrid();
+            });
+
+            document.getElementById('pan-left-btn').addEventListener('click', () => {
+                canvas.relativePan(new fabric.Point(50, 0));
+                drawGrid();
+            });
+            document.getElementById('pan-right-btn').addEventListener('click', () => {
+                canvas.relativePan(new fabric.Point(-50, 0));
+                drawGrid();
+            });
+            document.getElementById('pan-up-btn').addEventListener('click', () => {
+                canvas.relativePan(new fabric.Point(0, 50));
+                drawGrid();
+            });
+            document.getElementById('pan-down-btn').addEventListener('click', () => {
+                canvas.relativePan(new fabric.Point(0, -50));
+                drawGrid();
+            });
+            gridToggle.addEventListener('change', drawGrid);
+            document.getElementById('labels-toggle').addEventListener('change', drawGrid);
+            canvas.on('viewport:transformed', () => {
+                drawGrid();
+                const zoomSlider = document.getElementById('zoom-slider');
+                if (zoomSlider) {
+                    zoomSlider.value = canvas.getZoom();
+                }
+            });
+
+
+            // --- Color Conversion Helpers ---
+            function rgbaToHex(rgba) {
+                if (!rgba || typeof rgba !== 'string' || !rgba.startsWith('rgba')) return rgba;
+                const parts = rgba.substring(rgba.indexOf('(') + 1, rgba.lastIndexOf(')')).split(/,\s*/);
+                if (parts.length < 3) return rgba;
+                const r = parseInt(parts[0], 10).toString(16).padStart(2, '0');
+                const g = parseInt(parts[1], 10).toString(16).padStart(2, '0');
+                const b = parseInt(parts[2], 10).toString(16).padStart(2, '0');
+                return `#${r}${g}${b}`;
+            }
+
+            function hexToRgba(hex, alpha = 0.7) {
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            }
+
+
+            // --- Label Logic ---
+            function updateObjectLabels(obj) {
+                if (!obj || obj.name === 'grid' || !obj.planType) return;
+
+                // If it's a curved wall, ensure it has no label and then exit.
+                if (obj.planType === 'curved-wall') {
+                    if (obj.label) {
+                        canvas.remove(obj.label);
+                        obj.label = null;
+                    }
+                    return;
+                }
+
+                let labelText = '';
+                if (obj.planType === 'wall') {
+                    const length = Math.sqrt(Math.pow(obj.getScaledWidth(), 2) + Math.pow(obj.getScaledHeight(), 2));
+                    labelText = `${(length / PIXELS_PER_METER).toFixed(2)} m`;
+                } else {
+                    const width = obj.getScaledWidth() / PIXELS_PER_METER;
+                    const height = obj.getScaledHeight() / PIXELS_PER_METER;
+                    const roomName = obj.planType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    
+                    if (!['door', 'window', 'main-door'].includes(obj.planType)) {
+                         labelText = `${roomName}\n${width.toFixed(2)}m x ${height.toFixed(2)}m`;
+                    } else if (obj.planType === 'main-door') {
+                        labelText = 'Main Entry';
+                    }
+                    else {
+                         labelText = `${width.toFixed(2)}m x ${height.toFixed(2)}m`;
+                    }
+                }
+
+                if (!obj.label) {
+                    obj.label = new fabric.Text(labelText, { 
+                        fontSize: 12, 
+                        fill: '#374151', 
+                        textAlign: 'center',
+                        selectable: false, 
+                        evented: false 
+                    });
+                    canvas.add(obj.label);
+                } else {
+                    obj.label.set({ text: labelText });
+                }
+
+                positionLabels(obj);
+                canvas.renderAll();
+            }
+
+            function positionLabels(obj) {
+                const center = obj.getCenterPoint();
+                if (obj.label) {
+                    let topOffset = center.y - obj.label.height / 2;
+                    let leftOffset = center.x - obj.label.width / 2;
+
+                    if (obj.planType === 'wall' || obj.planType === 'curved-wall') {
+                        const offset = 15; 
+                        const angle = obj.angle * (Math.PI / 180);
+                        leftOffset += offset * Math.sin(angle);
+                        topOffset -= offset * Math.cos(angle);
+                    }
+
+                    obj.label.set({ 
+                        left: leftOffset, 
+                        top: topOffset 
+                    });
+                    obj.label.setCoords();
+                }
+            }
+
+            // --- Tool Selection ---
+            const toolBtns = document.querySelectorAll('.tool-btn');
+            function setActiveTool(toolId) {
+                toolBtns.forEach(b => b.classList.remove('active'));
+                const activeBtn = document.getElementById(`${toolId}-tool`);
+                if (activeBtn) {
+                    activeBtn.classList.add('active');
+                }
+                currentTool = toolId;
+                canvas.isDrawingMode = toolId === 'free-draw';
+                 if (canvas.isDrawingMode) {
+                    canvas.freeDrawingBrush.width = 5;
+                    canvas.freeDrawingBrush.color = '#374151';
+                }
+                canvas.selection = toolId === 'select';
+                canvas.defaultCursor = toolId === 'select' ? 'default' : 'crosshair';
+            }
+            
+            function switchToSelectTool() {
+                setActiveTool('select');
+            }
+
+
+            toolBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const toolId = btn.id.replace('-tool', '');
+                    
+                    if (toolId === 'custom') {
+                        const customName = prompt("Enter a name for your custom object (e.g., Closet):");
+                        if (customName) {
+                            customObjectType = customName.toLowerCase().replace(/\s+/g, '-');
+                            setActiveTool('custom-drawing');
+                        }
+                    } else {
+                        setActiveTool(toolId);
+                    }
+                });
+            });
+
+            // --- Canvas Events ---
+            canvas.on('mouse:down', (o) => {
+                // If the click is on an existing object, or if the select tool is active, do not start drawing.
+                if (o.target || currentTool === 'select' || canvas.isDrawingMode) {
+                    return;
+                }
+                
+                isDrawing = true;
+                const pointer = canvas.getPointer(o.e);
+                startPoint = { x: Math.round(pointer.x / snapSize) * snapSize, y: Math.round(pointer.y / snapSize) * snapSize };
+                let objectProps = { left: startPoint.x, top: startPoint.y, width: 0, height: 0, selectable: true, objectCaching: false };
+
+                switch (currentTool) {
+                    case 'wall':
+                        currentObject = new fabric.Line([startPoint.x, startPoint.y, startPoint.x, startPoint.y], { strokeWidth: 5, stroke: '#374151', planType: 'wall', ...objectProps });
+                        break;
+                    case 'main-door':
+                        currentObject = new fabric.Rect({ ...objectProps, width: 50, height: 10, fill: '#f59e0b', stroke: '#d97706', strokeWidth: 2, planType: 'main-door' });
+                        break;
+                    case 'door':
+                        currentObject = new fabric.Rect({ ...objectProps, width: 40, height: 10, fill: '#a5b4fc', stroke: '#4f46e5', strokeWidth: 2, planType: 'door' });
+                        break;
+                    case 'window':
+                        currentObject = new fabric.Rect({ ...objectProps, width: 60, height: 5, fill: '#67e8f9', stroke: '#0891b2', strokeWidth: 2, planType: 'window' });
+                        break;
+                    case 'master-bedroom':
+                        currentObject = new fabric.Rect({ ...objectProps, fill: 'rgba(254, 202, 202, 0.7)', stroke: '#dc2626', strokeWidth: 2, planType: 'master-bedroom' });
+                        break;
+                    case 'bedroom':
+                        currentObject = new fabric.Rect({ ...objectProps, fill: 'rgba(254, 215, 170, 0.7)', stroke: '#f97316', strokeWidth: 2, planType: 'bedroom' });
+                        break;
+                    case 'bathroom':
+                        currentObject = new fabric.Rect({ ...objectProps, fill: 'rgba(191, 219, 254, 0.7)', stroke: '#3b82f6', strokeWidth: 2, planType: 'bathroom' });
+                        break;
+                    case 'kitchen':
+                        currentObject = new fabric.Rect({ ...objectProps, fill: 'rgba(209, 250, 229, 0.7)', stroke: '#10b981', strokeWidth: 2, planType: 'kitchen' });
+                        break;
+                    case 'dining-room':
+                        currentObject = new fabric.Rect({ ...objectProps, fill: 'rgba(253, 224, 71, 0.7)', stroke: '#ca8a04', strokeWidth: 2, planType: 'dining-room' });
+                        break;
+                    case 'living-room':
+                        currentObject = new fabric.Rect({ ...objectProps, fill: 'rgba(199, 210, 254, 0.7)', stroke: '#6366f1', strokeWidth: 2, planType: 'living-room' });
+                        break;
+                    case 'garden':
+                        currentObject = new fabric.Rect({ ...objectProps, fill: 'rgba(134, 239, 172, 0.7)', stroke: '#22c55e', strokeWidth: 2, planType: 'garden' });
+                        break;
+                    case 'balcony':
+                        currentObject = new fabric.Rect({ ...objectProps, fill: 'rgba(229, 231, 235, 0.7)', stroke: '#6b7280', strokeWidth: 2, planType: 'balcony' });
+                        break;
+                    case 'custom-drawing':
+                        currentObject = new fabric.Rect({ ...objectProps, fill: 'rgba(209, 213, 219, 0.7)', stroke: '#4b5563', strokeWidth: 2, planType: customObjectType });
+                        break;
+                }
+                if(currentObject) {
+                    canvas.add(currentObject);
+                }
+            });
+
+            canvas.on('mouse:move', (o) => {
+                if (!isDrawing || !currentObject) return;
+                const pointer = canvas.getPointer(o.e);
+                const snappedX = Math.round(pointer.x / snapSize) * snapSize;
+                const snappedY = Math.round(pointer.y / snapSize) * snapSize;
+
+                if (currentTool === 'wall') {
+                    currentObject.set({ x2: snappedX, y2: snappedY });
+                } else {
+                    const width = snappedX - startPoint.x;
+                    const height = snappedY - startPoint.y;
+                    currentObject.set({ width: Math.abs(width), height: Math.abs(height), left: width > 0 ? startPoint.x : snappedX, top: height > 0 ? startPoint.y : snappedY });
+                }
+                updateObjectLabels(currentObject);
+            });
+
+            canvas.on('mouse:up', () => {
+                if (isDrawing) {
+                    isDrawing = false;
+                    if (currentObject) {
+                        currentObject.setCoords();
+                        updateObjectLabels(currentObject);
+                    }
+                    currentObject = null;
+                    startPoint = null;
+                    updateGenerate3DButtonState();
+                    if (currentTool !== 'select') {
+                        switchToSelectTool();
+                    }
+                    saveState();
+                    updatePropertiesPanel();
+                }
+            });
+            
+            canvas.on('path:created', (e) => {
+                const path = e.path;
+                path.set({
+                    planType: 'curved-wall',
+                    strokeWidth: 5,
+                    stroke: '#374151',
+                    fill: null,
+                    objectCaching: false
+                });
+                updateObjectLabels(path);
+                updatePropertiesPanel();
+                saveState();
+                setActiveTool('select');
+            });
+
+            canvas.on('object:moving', (e) => { updateObjectLabels(e.target); updatePropertiesPanel(); });
+            canvas.on('object:scaling', (e) => { updateObjectLabels(e.target); updatePropertiesPanel(); });
+            canvas.on('object:rotating', (e) => { updateObjectLabels(e.target); updatePropertiesPanel(); });
+            canvas.on('object:modified', () => { saveState(); updatePropertiesPanel(); });
+            canvas.on('selection:created', (e) => updatePropertiesPanel());
+            canvas.on('selection:updated', (e) => updatePropertiesPanel());
+            canvas.on('selection:cleared', () => updatePropertiesPanel());
+
+            // --- Properties Panel ---
+            function updatePropertiesPanel() {
+                const activeObject = canvas.getActiveObject();
+                propertiesPanel.innerHTML = ''; 
+
+                const objects = canvas.getObjects().filter(o => o.name !== 'grid' && o.planType);
+
+                if (objects.length === 0) {
+                    propertiesPanel.innerHTML = '<p class="text-gray-500">Select a tool to start drawing.</p>';
+                    return;
+                }
+
+                let html = '';
+                objects.forEach((obj, index) => {
+                    const isActive = (activeObject === obj);
+                    const name = (obj.planType || 'Object').replace(/-/g, ' ');
+                    const isWall = obj.planType === 'wall' || obj.planType === 'curved-wall';
+                    const isLocked = obj.isLocked || false;
+
+                    html += `<details class="block border rounded-lg transition-all duration-200 ${isActive ? 'bg-indigo-50 border-indigo-300' : 'bg-white'}" ${isActive ? 'open' : ''}>`;
+                    
+                    html += `
+                        <summary class="flex justify-between items-center p-2 cursor-pointer">
+                            <span class="font-semibold capitalize text-sm">${name}</span>
+                            <div class="flex items-center gap-1">
+                                <button onclick="toggleLock(${index})" class="p-1 ${isLocked ? 'text-indigo-600' : 'text-gray-400'} hover:bg-gray-200 rounded-full z-10" title="${isLocked ? 'Unlock' : 'Lock'}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        ${isLocked ? 
+                                            `<path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />` : 
+                                            `<path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />`
+                                        }
+                                    </svg>
+                                </button>
+                                <button onclick="deleteObjectByIndex(${index})" class="p-1 text-red-500 hover:bg-red-100 rounded-full z-10">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform duration-200 transform details-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                        </summary>
+                    `;
+
+                    html += `<div class="p-3 border-t bg-gray-50/50 space-y-3">`;
+                    
+                    const disabledAttribute = isLocked ? 'disabled' : '';
+                    const colorValue = obj.stroke || obj.fill;
+                    const hexColor = rgbaToHex(colorValue);
+                    html += `<div class="flex items-center justify-between"><label class="text-sm font-medium text-gray-700">Color</label><input type="color" value="${hexColor}" class="w-10 h-8 p-1 border rounded-md" onchange="updateProperty('${obj.stroke ? 'stroke' : 'fill'}', this.value, ${index})" ${disabledAttribute}></div>`;
+
+                    if (obj.planType === 'wall') {
+                        html += `<div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Thickness</label><input type="range" min="1" max="20" value="${obj.strokeWidth}" class="w-full" oninput="updateProperty('strokeWidth', this.value, ${index})" ${disabledAttribute}></div>`;
+                        html += `<div class="grid grid-cols-2 gap-2 mt-2">`;
+                        html += `    <div class="space-y-1"><label class="text-sm font-medium">X1</label><input type="number" value="${obj.x1.toFixed(0)}" class="w-full text-sm p-1 border rounded" onchange="updateProperty('x1', this.value, ${index})" ${disabledAttribute}></div>`;
+                        html += `    <div class="space-y-1"><label class="text-sm font-medium">Y1</label><input type="number" value="${obj.y1.toFixed(0)}" class="w-full text-sm p-1 border rounded" onchange="updateProperty('y1', this.value, ${index})" ${disabledAttribute}></div>`;
+                        html += `    <div class="space-y-1"><label class="text-sm font-medium">X2</label><input type="number" value="${obj.x2.toFixed(0)}" class="w-full text-sm p-1 border rounded" onchange="updateProperty('x2', this.value, ${index})" ${disabledAttribute}></div>`;
+                        html += `    <div class="space-y-1"><label class="text-sm font-medium">Y2</label><input type="number" value="${obj.y2.toFixed(0)}" class="w-full text-sm p-1 border rounded" onchange="updateProperty('y2', this.value, ${index})" ${disabledAttribute}></div>`;
+                        html += `</div>`;
+                    } else if (obj.planType === 'curved-wall') {
+                        html += `<div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Thickness</label><input type="range" min="1" max="20" value="${obj.strokeWidth}" class="w-full" oninput="updateProperty('strokeWidth', this.value, ${index})" ${disabledAttribute}></div>`;
+                    } else { // It's a rect-based object
+                        const width = (obj.getScaledWidth() / PIXELS_PER_METER).toFixed(2);
+                        const height = (obj.getScaledHeight() / PIXELS_PER_METER).toFixed(2);
+                        html += `<div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Width (m)</label><input type="number" step="0.1" value="${width}" class="w-full text-sm p-1 border rounded" onchange="updateProperty('width', this.value, ${index})" ${disabledAttribute}></div>`;
+                        html += `<div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Height (m)</label><input type="number" step="0.1" value="${height}" class="w-full text-sm p-1 border rounded" onchange="updateProperty('height', this.value, ${index})" ${disabledAttribute}></div>`;
+                        html += `<div class="grid grid-cols-2 gap-2 mt-2">`;
+                        html += `    <div class="space-y-1"><label class="text-sm font-medium">X</label><input type="number" value="${obj.left.toFixed(0)}" class="w-full text-sm p-1 border rounded" onchange="updateProperty('left', this.value, ${index})" ${disabledAttribute}></div>`;
+                        html += `    <div class="space-y-1"><label class="text-sm font-medium">Y</label><input type="number" value="${obj.top.toFixed(0)}" class="w-full text-sm p-1 border rounded" onchange="updateProperty('top', this.value, ${index})" ${disabledAttribute}></div>`;
+                        html += `</div>`;
+                        html += `
+                            <div class="space-y-1 mt-2">
+                                <div class="flex justify-between items-center">
+                                    <label class="block text-sm font-medium text-gray-700">Angle (°)</label>
+                                    <span class="text-sm text-gray-600">${obj.angle.toFixed(0)}°</span>
+                                </div>
+                                <input type="range" min="0" max="360" value="${obj.angle.toFixed(0)}" class="w-full" oninput="updateProperty('angle', this.value, ${index}); this.previousElementSibling.querySelector('span').textContent = this.value + '°';" ${disabledAttribute}>
+                            </div>`;
+                        html += `
+                            <div class="space-y-1 mt-2">
+                                <label class="block text-sm font-medium text-gray-700">Rotation Origin</label>
+                                <div class="grid grid-cols-3 gap-1 w-24 mx-auto p-1 bg-gray-200 rounded-md" ${disabledAttribute}>
+                                    <button onclick="updateOrigin(event, ${index}, 'left', 'top')" class="${obj.originX === 'left' && obj.originY === 'top' ? 'bg-indigo-500' : 'bg-white'} h-6 w-6 border rounded" ${disabledAttribute}></button>
+                                    <button onclick="updateOrigin(event, ${index}, 'center', 'top')" class="${obj.originX === 'center' && obj.originY === 'top' ? 'bg-indigo-500' : 'bg-white'} h-6 w-6 border rounded" ${disabledAttribute}></button>
+                                    <button onclick="updateOrigin(event, ${index}, 'right', 'top')" class="${obj.originX === 'right' && obj.originY === 'top' ? 'bg-indigo-500' : 'bg-white'} h-6 w-6 border rounded" ${disabledAttribute}></button>
+                                    <button onclick="updateOrigin(event, ${index}, 'left', 'center')" class="${obj.originX === 'left' && obj.originY === 'center' ? 'bg-indigo-500' : 'bg-white'} h-6 w-6 border rounded" ${disabledAttribute}></button>
+                                    <button onclick="updateOrigin(event, ${index}, 'center', 'center')" class="${obj.originX === 'center' && obj.originY === 'center' ? 'bg-indigo-500' : 'bg-white'} h-6 w-6 border rounded" ${disabledAttribute}></button>
+                                    <button onclick="updateOrigin(event, ${index}, 'right', 'center')" class="${obj.originX === 'right' && obj.originY === 'center' ? 'bg-indigo-500' : 'bg-white'} h-6 w-6 border rounded" ${disabledAttribute}></button>
+                                    <button onclick="updateOrigin(event, ${index}, 'left', 'bottom')" class="${obj.originX === 'left' && obj.originY === 'bottom' ? 'bg-indigo-500' : 'bg-white'} h-6 w-6 border rounded" ${disabledAttribute}></button>
+                                    <button onclick="updateOrigin(event, ${index}, 'center', 'bottom')" class="${obj.originX === 'center' && obj.originY === 'bottom' ? 'bg-indigo-500' : 'bg-white'} h-6 w-6 border rounded" ${disabledAttribute}></button>
+                                    <button onclick="updateOrigin(event, ${index}, 'right', 'bottom')" class="${obj.originX === 'right' && obj.originY === 'bottom' ? 'bg-indigo-500' : 'bg-white'} h-6 w-6 border rounded" ${disabledAttribute}></button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    if (['door', 'window', 'main-door'].includes(obj.planType)) {
+                        html += `<button onclick="rotateObject(${index})" class="w-full mt-2 p-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 text-sm" ${disabledAttribute}>Rotate 90°</button>`;
+                    }
+                    html += `</div></details>`;
+                });
+                propertiesPanel.innerHTML = html;
+            }
+            
+            window.updateOrigin = (event, index, originX, originY) => {
+                event.stopPropagation(); // Prevent the details panel from closing
+                const objects = canvas.getObjects().filter(o => o.name !== 'grid' && o.planType);
+                const obj = objects[index];
+                if (!obj) return;
+
+                const oldCenter = obj.getCenterPoint();
+                obj.set({ originX, originY });
+                const newCenter = obj.getCenterPoint();
+
+                const deltaX = oldCenter.x - newCenter.x;
+                const deltaY = oldCenter.y - newCenter.y;
+
+                obj.set({
+                    left: obj.left + deltaX,
+                    top: obj.top + deltaY
+                });
+                
+                obj.setCoords();
+                updateObjectLabels(obj);
+                canvas.setActiveObject(obj);
+                canvas.renderAll();
+                saveState();
+                updatePropertiesPanel();
+            };
+
+            window.toggleLock = (index) => {
+                const objects = canvas.getObjects().filter(o => o.name !== 'grid' && o.planType);
+                const obj = objects[index];
+                if (!obj) return;
+
+                obj.isLocked = !obj.isLocked;
+
+                obj.set({
+                    selectable: !obj.isLocked,
+                    evented: !obj.isLocked,
+                    opacity: obj.isLocked ? 0.6 : 1,
+                });
+                
+                if (obj.isLocked && canvas.getActiveObject() === obj) {
+                    canvas.discardActiveObject();
+                }
+                
+                canvas.renderAll();
+                updatePropertiesPanel();
+                saveState();
+            };
+
+            window.rotateObject = (index) => {
+                const objects = canvas.getObjects().filter(o => o.name !== 'grid' && o.planType);
+                const objectToRotate = objects[index];
+                if (!objectToRotate) return;
+
+                objectToRotate.rotate(objectToRotate.angle + 90);
+                updateObjectLabels(objectToRotate);
+                canvas.renderAll();
+                saveState();
+                updatePropertiesPanel();
+            };
+
+            window.updateProperty = (prop, value, index) => {
+                const objects = canvas.getObjects().filter(o => o.name !== 'grid' && o.planType);
+                const obj = objects[index];
+                if (!obj) return;
+                
+                if (prop === 'fill') {
+                    const isRoom = !['wall', 'curved-wall', 'door', 'window', 'main-door'].includes(obj.planType);
+                    if (isRoom) {
+                        obj.set(prop, hexToRgba(value));
+                    } else {
+                        obj.set(prop, value);
+                    }
+                } else if (prop === 'width' || prop === 'height') {
+                     const numericValue = parseFloat(value);
+                    if (isNaN(numericValue) || numericValue < 0) return;
+
+                    if (prop === 'width') {
+                        obj.scaleToWidth(numericValue * PIXELS_PER_METER);
+                    } else if (prop === 'height') {
+                        obj.scaleToHeight(numericValue * PIXELS_PER_METER);
+                    }
+                } else if (['left', 'top', 'x1', 'y1', 'x2', 'y2', 'strokeWidth', 'angle'].includes(prop)) {
+                    const numericValue = parseFloat(value);
+                    if (!isNaN(numericValue)) {
+                        obj.set(prop, numericValue);
+                    }
+                } else {
+                    obj.set(prop, value);
+                }
+
+                updateObjectLabels(obj);
+                obj.setCoords();
+                canvas.renderAll();
+                saveState();
+            };
+
+            window.deleteObjectByIndex = (index) => {
+                const objects = canvas.getObjects().filter(o => o.name !== 'grid' && o.planType);
+                const objToDelete = objects[index];
+                if (objToDelete) {
+                    if (objToDelete.label) canvas.remove(objToDelete.label);
+                    canvas.remove(objToDelete);
+                    canvas.discardActiveObject().renderAll();
+                    updatePropertiesPanel();
+                    updateGenerate3DButtonState();
+                    saveState();
+                }
+            };
+
+
+            // --- Delete & Clear Buttons ---
+            document.getElementById('delete-btn').addEventListener('click', () => {
+                const activeObjects = canvas.getActiveObjects();
+                if (activeObjects.length > 0) {
+                    activeObjects.forEach(obj => {
+                        if (obj.label) canvas.remove(obj.label);
+                        canvas.remove(obj);
+                    });
+                    canvas.discardActiveObject().renderAll();
+                }
+                 updateGenerate3DButtonState();
+                 updatePropertiesPanel();
+                 saveState();
+            });
+            
+            clearBtn.addEventListener('click', () => {
+                const objects = canvas.getObjects().filter(obj => obj.name !== 'grid');
+                objects.forEach(obj => canvas.remove(obj));
+                updatePropertiesPanel();
+                saveState();
+            });
+
+            // --- History & Action Buttons ---
+            function saveState() {
+                if (isUpdatingState) return;
+                const state = canvas.toJSON(['planType', 'isLocked', 'originX', 'originY']);
+                state.objects = state.objects.filter(obj => obj.planType);
+                
+                if (history.length > 0 && JSON.stringify(state) === JSON.stringify(history[history.length - 1])) {
+                    return;
+                }
+                redoStack = [];
+                history.push(state);
+                updateHistoryButtons();
+            }
+
+            function loadState(state) {
+                isUpdatingState = true;
+                canvas.getObjects().forEach(obj => {
+                    if (obj.name !== 'grid') {
+                        canvas.remove(obj);
+                    }
+                });
+
+                fabric.util.enlivenObjects(state.objects, (objects) => {
+                    objects.forEach(obj => {
+                        if (obj.isLocked) {
+                            obj.set({
+                                selectable: false,
+                                evented: false,
+                                opacity: 0.6
+                            });
+                        }
+                    });
+                    canvas.add(...objects);
+                    updateAllObjectLabels();
+                    canvas.renderAll();
+                    isUpdatingState = false;
+                    updateHistoryButtons();
+                    updatePropertiesPanel();
+                }, '');
+            }
+
+            function updateAllObjectLabels() {
+                const mainObjects = canvas.getObjects().filter(o => o.planType);
+                mainObjects.forEach(obj => {
+                    obj.label = null; 
+                    updateObjectLabels(obj);
+                });
+            }
+
+            function updateHistoryButtons() {
+                undoBtn.disabled = history.length <= 1;
+                redoBtn.disabled = redoStack.length === 0;
+            }
+
+            undoBtn.addEventListener('click', () => {
+                if (history.length > 1) {
+                    const currentState = history.pop();
+                    redoStack.push(currentState);
+                    const prevState = history[history.length - 1];
+                    loadState(prevState);
+                }
+            });
+
+            redoBtn.addEventListener('click', () => {
+                if (redoStack.length > 0) {
+                    const stateToRedo = redoStack.pop();
+                    history.push(stateToRedo);
+                    loadState(stateToRedo);
+                }
+            });
+
+            // Initial state
+            saveState();
+
+            // --- 3D Generation Button State ---
+            function updateGenerate3DButtonState() {
+                const hasApiKey = apiKey && apiKey !== "YOUR_API_KEY_HERE";
+                if (canvas.getObjects().filter(o => o.name !== 'grid' && o.planType).length > 0 && hasApiKey) {
+                    generate3dBtn.disabled = false;
+                } else {
+                    generate3dBtn.disabled = true;
+                }
+            }
+            
+            // --- AI Logic ---
+            const generatePlanBtnText = document.getElementById('generate-plan-btn-text');
+            const generatePlanLoader = document.getElementById('generate-plan-loader');
+            const generate3DBtnText = document.getElementById('generate-3d-btn-text');
+            const generate3DLoader = document.getElementById('generate-3d-loader');
+
+            async function makeApiCallWithExponentialBackoff(apiUrl, payload) {
+                let delay = 1000;
+                for (let i = 0; i < 5; i++) {
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.ok) {
+                            return await response.json();
+                        } else if (response.status === 429) {
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            delay *= 2;
+                        } else {
+                            const error = await response.json();
+                            const message = error.error ? error.error.message : 'API request failed';
+                            if (message.includes("API key not valid")) {
+                                throw new Error("Your API key is not valid. Please check it and try again.");
+                            }
+                            throw new Error(message);
+                        }
+                    } catch (error) {
+                        if (i === 4) throw error;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2;
+                    }
+                }
+                throw new Error('API request failed after multiple retries.');
+            }
+
+            async function generate2DPlan() {
+                if (!apiKey) {
+                    showMessage("Please enter and save your Google AI API key first.", "API Key Required");
+                    return;
+                }
+                const userPrompt = document.getElementById('ai-prompt').value;
+                if (!userPrompt) {
+                    showMessage("Please describe your floor plan.");
+                    return;
+                }
+
+                generatePlanBtn.disabled = true;
+                generatePlanBtnText.classList.add('hidden');
+                generatePlanLoader.classList.remove('hidden');
+
+                const systemPrompt = `You are an expert architect. Generate a 2D floor plan as a JSON array of rooms, walls, doors, and windows. Make sure:
+- All rooms are directly connected, with no empty spaces or gaps between them.
+- Rooms should share walls where possible.
+- The layout should be compact and efficient, with no unused areas.
+- Each room should have at least one door and window.
+- Use clear labels for room types (e.g., master-bedroom, bedroom, living-room, kitchen, dining-room, bathroom).
+- Return only the JSON array.`;
+                const schema = { type: "OBJECT", properties: { 
+                    rooms: { type: "ARRAY", items: { type: "OBJECT", properties: { x: { type: "NUMBER" }, y: { type: "NUMBER" }, width: { type: "NUMBER" }, height: { type: "NUMBER" }, type: { type: "STRING" } } } },
+                    walls: { type: "ARRAY", items: { type: "OBJECT", properties: { x1: { type: "NUMBER" }, y1: { type: "NUMBER" }, x2: { type: "NUMBER" }, y2: { type: "NUMBER" } } } }, 
+                    doors: { type: "ARRAY", items: { type: "OBJECT", properties: { x: { type: "NUMBER" }, y: { type: "NUMBER" }, angle: { type: "NUMBER" }, type: { type: "STRING" } } } }, 
+                    windows: { type: "ARRAY", items: { type: "OBJECT", properties: { x: { type: "NUMBER" }, y: { type: "NUMBER" }, angle: { type: "NUMBER" } } } } 
+                } };
+                const payload = { contents: [{ role: "user", parts: [{ text: `${systemPrompt}\n\nUser request: ${userPrompt}` }] }], generationConfig: { responseMimeType: "application/json", responseSchema: schema } };
+                
+                try {
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                    const result = await makeApiCallWithExponentialBackoff(apiUrl, payload);
+                    
+                    if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                        const jsonText = result.candidates[0].content.parts[0].text;
+                        const plan = JSON.parse(jsonText);
+                        drawPlanOnCanvas(plan);
+                    } else {
+                        if (result.promptFeedback && result.promptFeedback.blockReason) {
+                             throw new Error(`Request was blocked by the API for reason: ${result.promptFeedback.blockReason}. Please modify your prompt.`);
+                        }
+                        throw new Error("Invalid or empty response structure from AI.");
+                    }
+                } catch (error) {
+                    console.error("Error generating 2D plan:", error);
+                    showMessage(`Error: Could not generate the 2D plan. ${error.message}`, "Error");
+                } finally {
+                    generatePlanBtn.disabled = false;
+                    generatePlanBtnText.classList.remove('hidden');
+                    generatePlanLoader.classList.add('hidden');
+                }
+            }
+
+            
+            function drawPlanOnCanvas(plan) {
+                const objects = canvas.getObjects().filter(obj => obj.name !== 'grid');
+                objects.forEach(obj => canvas.remove(obj));
+
+                const objectsToAdd = [];
+
+                const roomColors = {
+                    'master-bedroom': { fill: 'rgba(254, 202, 202, 0.7)', stroke: '#dc2626' },
+                    'bedroom': { fill: 'rgba(254, 215, 170, 0.7)', stroke: '#f97316' },
+                    'bathroom': { fill: 'rgba(191, 219, 254, 0.7)', stroke: '#3b82f6' },
+                    'kitchen': { fill: 'rgba(209, 250, 229, 0.7)', stroke: '#10b981' },
+                    'dining-room': { fill: 'rgba(253, 224, 71, 0.7)', stroke: '#ca8a04' },
+                    'balcony': { fill: 'rgba(229, 231, 235, 0.7)', stroke: '#6b7280' },
+                    'living-room': { fill: 'rgba(199, 210, 254, 0.7)', stroke: '#6366f1' },
+                    'garden': { fill: 'rgba(134, 239, 172, 0.7)', stroke: '#22c55e' },
+                    'hallway': { fill: 'rgba(243, 244, 246, 0.7)', stroke: '#9ca3af' }
+                };
+
+                plan.rooms?.forEach(room => {
+                    const colors = roomColors[room.type] || { fill: 'rgba(209, 213, 219, 0.7)', stroke: '#4b5563' };
+                    const roomObj = new fabric.Rect({ 
+                        left: room.x, top: room.y, width: room.width, height: room.height, 
+                        fill: colors.fill, stroke: colors.stroke, strokeWidth: 2, 
+                        planType: room.type, selectable: true 
+                    });
+                    objectsToAdd.push(roomObj);
+                });
+
+                plan.walls?.forEach(wall => {
+                    const wallObj = new fabric.Line([wall.x1, wall.y1, wall.x2, wall.y2], { strokeWidth: 5, stroke: '#374151', planType: 'wall', selectable: true });
+                    objectsToAdd.push(wallObj);
+                });
+                plan.doors?.forEach(door => {
+                    const isMain = door.type === 'main-door';
+                    const doorObj = new fabric.Rect({ 
+                        left: door.x, top: door.y, 
+                        width: isMain ? 50 : 40, 
+                        height: 10, 
+                        angle: door.angle || 0, 
+                        fill: isMain ? '#f59e0b' : '#a5b4fc', 
+                        stroke: isMain ? '#d97706' : '#4f46e5', 
+                        strokeWidth: 2, 
+                        planType: isMain ? 'main-door' : 'door', 
+                        selectable: true 
+                    });
+                    objectsToAdd.push(doorObj);
+                });
+                plan.windows?.forEach(win => {
+                    const winObj = new fabric.Rect({ left: win.x, top: win.y, width: 60, height: 5, angle: win.angle || 0, fill: '#67e8f9', stroke: '#0891b2', strokeWidth: 2, planType: 'window', selectable: true });
+                    objectsToAdd.push(winObj);
+                });
+                
+                objectsToAdd.forEach(obj => {
+                    canvas.add(obj);
+                    updateObjectLabels(obj);
+                });
+
+                canvas.renderAll();
+                updateGenerate3DButtonState();
+                updatePropertiesPanel();
+            }
+
+            generatePlanBtn.addEventListener('click', generate2DPlan);
+
+            // --- Generate 3D Model ---
+            async function generate3DModel() {
+                 if (!apiKey) {
+                    showMessage("Please enter and save your Google AI API key first.", "API Key Required");
+                    return;
+                }
+                const objects = canvas.getObjects().filter(obj => obj.name !== 'grid' && !obj.isType('text'));
+                if (objects.length === 0) {
+                    showMessage("The canvas is empty. Add some elements first.");
+                    return;
+                }
+
+                generate3dBtn.disabled = true;
+                generate3DBtnText.classList.add('hidden');
+                generate3DLoader.classList.remove('hidden');
+                open3DModal();
+
+                const planDescription = objects.map(obj => {
+                    const type = (obj.planType || 'object').replace('-', ' ');
+                    if (obj.planType === 'wall' || obj.planType === 'curved-wall') {
+                        const length = Math.sqrt(Math.pow(obj.getScaledWidth(), 2) + Math.pow(obj.getScaledHeight(), 2)) / PIXELS_PER_METER;
+                        return `A ${type} with length ${length.toFixed(2)} meters.`;
+                    } else {
+                        const width = obj.getScaledWidth() / PIXELS_PER_METER;
+                        const height = obj.getScaledHeight() / PIXELS_PER_METER;
+                        return `A ${type} with dimensions ${width.toFixed(2)}m x ${height.toFixed(2)}m.`;
+                    }
+                }).join(' ');
+
+                const userPrompt = `Generate a photorealistic 3D render of a floor plan with the following elements: ${planDescription}. The view should be a top-down isometric perspective.`;
+                const payload = { instances: [{ prompt: userPrompt }], parameters: { "sampleCount": 1 } };
+                
+                try {
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+                    const result = await makeApiCallWithExponentialBackoff(apiUrl, payload);
+                    
+                    if (result.predictions && result.predictions[0] && result.predictions[0].bytesBase64Encoded) {
+                        const imageUrl = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+                        showGeneratedImage(imageUrl);
+                    } else {
+                        throw new Error("No image data in API response.");
+                    }
+                } catch (error) {
+                    console.error("Error generating 3D model:", error);
+                    show3DModalError(`Error: Could not generate the 3D model. ${error.message}`);
+                } finally {
+                    generate3dBtn.disabled = false;
+                    generate3DBtnText.classList.remove('hidden');
+                    generate3DLoader.classList.add('hidden');
+                }
+            }
+
+            function generate3DModelFrom2D() {
+                const width = 800, height = 600;
+                const scene = new THREE.Scene();
+                scene.background = new THREE.Color(0xf3f4f6);
+                const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 2000);
+                camera.position.set(400, 600, 800);
+                camera.lookAt(0, 0, 0);
+                const renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(width, height);
+                // Modern color palette
+                const wallColor = 0xe0e0e0;
+                const floorColor = 0xf5e9da;
+                const doorColor = 0xffb347;
+                const windowColor = 0x6ad1e3;
+                scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+                const dir = new THREE.DirectionalLight(0xffffff, 0.6);
+                dir.position.set(100, 200, 100);
+                scene.add(dir);
+                // Floor
+                const floor = new THREE.Mesh(
+                    new THREE.PlaneGeometry(2000, 2000),
+                    new THREE.MeshPhongMaterial({ color: floorColor })
+                );
+                floor.rotation.x = -Math.PI / 2;
+                scene.add(floor);
+                // Wall parameters
+                const wallHeight = 80;
+                const wallThickness = 10;
+                // Render all walls as 3D segments
+                const objs = canvas.getObjects();
+                objs.filter(o => o.planType === 'wall').forEach(o => {
+                    const x1 = o.x1, y1 = o.y1, x2 = o.x2, y2 = o.y2;
+                    const dx = x2 - x1, dy = y2 - y1;
+                    const len = Math.sqrt(dx * dx + dy * dy);
+                    const wall = new THREE.Mesh(
+                        new THREE.BoxGeometry(len, wallHeight, wallThickness),
+                        new THREE.MeshPhongMaterial({ color: wallColor })
+                    );
+                    wall.position.set((x1 + x2) / 2 - 400, wallHeight / 2, (y1 + y2) / 2 - 300);
+                    wall.rotation.y = Math.atan2(dy, dx) * -1;
+                    scene.add(wall);
+                });
+                // Cut out doors and windows in walls
+                function addWallCutout(x, y, width, height, wallRotation, type) {
+                    const color = type === 'door' ? doorColor : windowColor;
+                    const cutout = new THREE.Mesh(
+                        new THREE.BoxGeometry(width, height, wallThickness + 1),
+                        new THREE.MeshPhongMaterial({ color })
+                    );
+                    cutout.position.set(x, height / 2, y);
+                    cutout.rotation.y = wallRotation;
+                    scene.add(cutout);
+                }
+                function findNearestWall(obj) {
+                    let minDist = Infinity, nearest = null, angle = 0;
+                    objs.filter(o => o.planType === 'wall').forEach(w => {
+                        const wx = (w.x1 + w.x2) / 2, wy = (w.y1 + w.y2) / 2;
+                        const c = obj.getCenterPoint();
+                        const dist = Math.sqrt(Math.pow(wx - c.x, 2) + Math.pow(wy - c.y, 2));
+                        if (dist < minDist) { minDist = dist; nearest = w; angle = Math.atan2(w.y2 - w.y1, w.x2 - w.x1) * -1; }
+                    });
+                    return { wall: nearest, angle };
+                }
+                objs.filter(o => o.planType === 'door' || o.planType === 'main-door').forEach(o => {
+                    let { wall, angle } = findNearestWall(o);
+                    let c = o.getCenterPoint();
+                    let wx = wall ? (wall.x1 + wall.x2) / 2 : c.x;
+                    let wy = wall ? (wall.y1 + wall.y2) / 2 : c.y;
+                    addWallCutout(wx - 400, wy - 300, o.getScaledWidth(), 60, angle, 'door');
+                });
+                objs.filter(o => o.planType === 'window').forEach(o => {
+                    let { wall, angle } = findNearestWall(o);
+                    let c = o.getCenterPoint();
+                    let wx = wall ? (wall.x1 + wall.x2) / 2 : c.x;
+                    let wy = wall ? (wall.y1 + wall.y2) / 2 : c.y;
+                    addWallCutout(wx - 400, wy - 300, o.getScaledWidth(), 40, angle, 'window');
+                });
+                // Show in modal
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = '';
+                modalContent.appendChild(renderer.domElement);
+                document.getElementById('modal-3d').classList.remove('hidden');
+                // Add OrbitControls for interactive navigation
+                const controls = new THREE.OrbitControls(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.05;
+                controls.enablePan = true;
+                controls.enableZoom = true;
+                controls.enableRotate = true;
+                controls.minPolarAngle = 0;
+                controls.maxPolarAngle = Math.PI;
+                controls.target.set(0, 0, 0);
+                controls.update();
+                function animate() {
+                    requestAnimationFrame(animate);
+                    controls.update();
+                    renderer.render(scene, camera);
+                }
+                animate();
+            }
+            // Wire up the button
+            if (document.getElementById('generate-3d-btn')) {
+                document.getElementById('generate-3d-btn').addEventListener('click', generate3DModelFrom2D);
+            }
+
+            // --- Modal Logic ---
+            const modal3D = document.getElementById('modal-3d');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const imageLoader = document.getElementById('image-loader');
+            const generatedImage = document.getElementById('generated-image');
+            const errorMessage3D = document.getElementById('error-message');
+            const messageModal = document.getElementById('message-modal');
+            const messageModalTitle = document.getElementById('message-modal-title');
+            const messageModalText = document.getElementById('message-modal-text');
+            const messageModalClose = document.getElementById('message-modal-close');
+
+            function open3DModal() { modal3D.classList.remove('hidden'); imageLoader.classList.remove('hidden'); generatedImage.classList.add('hidden'); errorMessage3D.classList.add('hidden'); }
+            function close3DModal() { modal3D.classList.add('hidden'); }
+            function showGeneratedImage(src) { generatedImage.src = src; imageLoader.classList.add('hidden'); generatedImage.classList.remove('hidden'); }
+            function show3DModalError(message) { errorMessage3D.textContent = message; imageLoader.classList.add('hidden'); errorMessage3D.classList.remove('hidden'); }
+            function showMessage(text, title = "Notification") { messageModalTitle.textContent = title; messageModalText.textContent = text; messageModal.classList.remove('hidden'); }
+            function closeMessageModal() { messageModal.classList.add('hidden'); }
+
+            closeModalBtn.addEventListener('click', close3DModal);
+            modal3D.addEventListener('click', (e) => { if (e.target === modal3D) close3DModal(); });
+            messageModalClose.addEventListener('click', closeMessageModal);
+            messageModal.addEventListener('click', (e) => { if (e.target === messageModal) closeMessageModal(); });
+
+            // --- Save Canvas to File ---
+            saveBtn.addEventListener('click', () => {
+                const state = canvas.toJSON(['planType', 'isLocked', 'originX', 'originY']);
+                const json = JSON.stringify(state, null, 2);
+                const blob = new Blob([json], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = "floorplan.json";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                URL.revokeObjectURL(url);
+            });
+
+            // --- Load Canvas from File ---
+            loadBtn.addEventListener('click', () => {
+                loadInput.click();
+            });
+
+            loadInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) {
+                    alert("No file selected.");
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const state = JSON.parse(e.target.result);
+
+                        // Validate the structure of the loaded file
+                        if (!state.objects || !Array.isArray(state.objects)) {
+                            throw new Error("Invalid file structure. Ensure the file contains a valid canvas state.");
+                        }
+
+                        loadState(state);   // uses your existing loadState()
+                        saveState();        // re-adds to history
+                    } catch (err) {
+                        console.error("Error loading file:", err);
+                        alert("Error loading file: " + err.message);
+                    }
+                };
+
+                reader.onerror = () => {
+                    alert("Error reading the file. Please try again.");
+                };
+
+                reader.readAsText(file);
+            });
+
+            function renderLayoutFromJSON(layout) {
+                // Find bounds for all objects, using fallback for missing width/height
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                layout.forEach(obj => {
+                    let w = obj.width || obj.length || obj.size || 8;
+                    let h = obj.height || obj.size || 8;
+                    if (obj.x !== undefined && obj.y !== undefined) {
+                        minX = Math.min(minX, obj.x);
+                        minY = Math.min(minY, obj.y);
+                        maxX = Math.max(maxX, obj.x + w);
+                        maxY = Math.max(maxY, obj.y + h);
+                    }
+                });
+                // Calculate scale and offset to fit canvas (assume 800x600)
+                const canvasW = 800, canvasH = 600;
+                const planW = maxX - minX;
+                const planH = maxY - minY;
+                const padding = 40;
+                const safePlanW = Math.max(planW, 1);
+                const safePlanH = Math.max(planH, 1);
+                const scale = Math.min((canvasW - 2 * padding) / safePlanW, (canvasH - 2 * padding) / safePlanH);
+                const offsetX = (canvasW - safePlanW * scale) / 2 - minX * scale;
+                const offsetY = (canvasH - safePlanH * scale) / 2 - minY * scale;
+                // Clear canvas
+                canvas.clear();
+                // Draw each object, scaled and offset
+                layout.forEach(obj => {
+                    let w = obj.width || obj.length || obj.size || 8;
+                    let h = obj.height || obj.size || 8;
+                    if (obj.x !== undefined && obj.y !== undefined) {
+                        const x = obj.x * scale + offsetX;
+                        const y = obj.y * scale + offsetY;
+                        const sw = w * scale;
+                        const sh = h * scale;
+                        // Room
+                        if (obj.planType && obj.planType !== 'wall' && obj.planType !== 'door' && obj.planType !== 'window' && obj.planType !== 'main-door') {
+                            const rect = new fabric.Rect({
+                                left: x,
+                                top: y,
+                                width: sw,
+                                height: sh,
+                                fill: obj.color || 'rgba(255,255,255,0.1)',
+                                stroke: '#222',
+                                strokeWidth: 2,
+                                selectable: false
+                            });
+                            rect.planType = obj.planType;
+                            canvas.add(rect);
+                        }
+                        // Wall
+                        if (obj.planType === 'wall') {
+                            const wall = new fabric.Rect({
+                                left: x,
+                                top: y,
+                                width: sw,
+                                height: sh,
+                                fill: '#222',
+                                stroke: '#222',
+                                strokeWidth: 2,
+                                selectable: false
+                            });
+                            wall.planType = 'wall';
+                            canvas.add(wall);
+                        }
+                        // Door orientation fix
+                        if (obj.planType === 'door' || obj.planType === 'main-door') {
+                            let isHorizontal = sw > sh;
+                            const door = new fabric.Rect({
+                                left: x,
+                                top: y,
+                                width: isHorizontal ? sw : 8,
+                                height: isHorizontal ? 8 : sh,
+                                fill: obj.planType === 'main-door' ? '#ffb347' : '#6a8cff',
+                                stroke: '#222',
+                                strokeWidth: 1,
+                                selectable: false
+                            });
+                            door.planType = obj.planType;
+                            canvas.add(door);
+                        }
+                        // Window orientation fix
+                        if (obj.planType === 'window') {
+                            let isHorizontal = sw > sh;
+                            const win = new fabric.Rect({
+                                left: x,
+                                top: y,
+                                width: isHorizontal ? sw : 6,
+                                height: isHorizontal ? 6 : sh,
+                                fill: '#33bbdd',
+                                stroke: '#222',
+                                strokeWidth: 1,
+                                selectable: false
+                            });
+                            win.planType = obj.planType;
+                            canvas.add(win);
+                        }
+                    }
+                });
+                canvas.renderAll();
+            }
+        });
+    </script>
+</body>
+</html>

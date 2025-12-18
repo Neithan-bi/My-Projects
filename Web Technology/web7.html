@@ -1,0 +1,59 @@
+const express = require('express');
+const path = require('path');
+
+const app = express();
+const PORT = 3000;
+
+// parse JSON bodies
+app.use(express.json());
+
+// serve the HTML file at root
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'web7.html'));
+});
+
+// simple in-memory data store
+let items = [
+  { id: 1, name: 'item1' },
+  { id: 2, name: 'item2' }
+];
+
+// REST routes
+app.get('/items', (req, res) => {
+  res.json(items);
+});
+
+app.get('/items/:id', (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const item = items.find(it => it.id === id);
+  if (!item) return res.status(404).json({ error: 'Not found' });
+  res.json(item);
+});
+
+app.post('/items', (req, res) => {
+  const nextId = items.length ? items[items.length - 1].id + 1 : 1;
+  const newItem = { id: nextId, name: req.body.name || `item${nextId}` };
+  items.push(newItem);
+  res.status(201).json(newItem);
+});
+
+app.put('/items/:id', (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const item = items.find(it => it.id === id);
+  if (!item) return res.status(404).json({ error: 'Not found' });
+  item.name = req.body.name || item.name;
+  res.json(item);
+});
+
+app.delete('/items/:id', (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const idx = items.findIndex(it => it.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Not found' });
+  const removed = items.splice(idx, 1)[0];
+  res.json(removed);
+});
+
+// start server
+app.listen(PORT, () => {
+  console.log(`Server running http://localhost:${PORT}`);
+});

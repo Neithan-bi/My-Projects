@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>DOM Manipulation with JavaScript</title>
+ <style>
+ body {
+ font-family: Arial, sans-serif;
+ margin: 20px;
+ }
+ .container {
+ margin-top: 20px;
+ }
+ .item {
+ background-color: #f4f4f9;
+ padding: 10px;
+ margin: 10px 0;
+ border: 1px solid #ddd;
+ border-radius: 5px;
+ }
+ </style>
+</head>
+<body>
+ <h1>DOM Manipulation with JavaScript</h1>
+ <button id="addItemButton">Add Item</button>
+ <div class="container" id="itemContainer">
+ <div class="item">Initial Item</div>
+ </div>
+ <script>
+ // Function to create a new item
+ function createNewItem(text) {
+ // Create a new div element
+ const newItem = document.createElement('div');
+ // Add the 'item' class to the new div
+ newItem.classList.add('item');
+ // Set the text content of the new div
+ newItem.textContent = text;
+ return newItem;
+ }
+ // Function to add a new item to the container
+ function addItem() {
+ // Get the item container
+ const itemContainer = document.getElementById('itemContainer');
+ // Create a new item
+ const newItem = createNewItem('New Item');
+ // Append the new item to the container
+ itemContainer.appendChild(newItem);
+ }
+ // Get the 'Add Item' button
+ const addItemButton = document.getElementById('addItemButton');
+ // Add an event listener to the 'Add Item' button
+ addItemButton.addEventListener('click', addItem);
+ </script>
+</body>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>CRUD with Node.js and MongoDB</title>
+ <link rel="stylesheet" href="exp9style.css">
+</head>
+<body>
+ <div class="container">
+ <h1>CRUD with Node.js and MongoDB</h1>
+ <form action="/items" method="POST">
+ <div class="form-group">
+ <label for="name">Name:</label>
+ <input type="text" id="name" name="name" required>
+ </div>
+ <div class="form-group">
+ <label for="description">Description:</label>
+ <textarea id="description" name="description" required></textarea>
+ </div>
+ <button type="submit">Add Item</button>
+ </form>
+ <h2>Items</h2>
+ <ul>
+ <% items.forEach(item => { %>
+ <li class="list-group-item">
+ <strong><%= item.name %></strong>: <%= item.description %>
+ <button onclick="deleteItem('<%= item._id %>')">Delete</button>
+ <button onclick="editItem('<%= item._id %>', '<%= item.name %>', '<%= item.description %>')">Edit</button>
+ </li>
+ <% }); %>
+ </ul>
+ </div>
+ <script src="expscript.js"></script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>CA3: Component 6 - JS Solutions</title>
+</head>
+<body>
+  <h1>CA3: Component 6 - Problem Solving (JS)</h1>
+
+  <h2>Q1. Conditional (if - else) — Discount</h2>
+  <label>Enter bill amount: <input id="bill" type="number" /></label>
+  <button onclick="calculateDiscount()">Calculate</button>
+  <div id="discountResult"></div>
+
+  <h2>Q2. Conditional (switch) — Day from number</h2>
+  <label>Enter day number (1-7): <input id="dayNum" type="number" min="1" max="7" /></label>
+  <button onclick="showDay()">Show Day</button>
+  <div id="dayResult"></div>
+
+  <h2>Q3. Loop (for) — Multiplication table</h2>
+  <label>Enter number (leave empty for 5): <input id="tableNum" type="number" /></label>
+  <button onclick="printTable()">Print Table</button>
+  <pre id="tableResult"></pre>
+
+  <h2>Q4. Loop (while) — Sum using while loop</h2>
+  <label>Enter limit (leave empty for 50): <input id="limit" type="number" /></label>
+  <button onclick="sumNumbers()">Calculate Sum</button>
+  <div id="sumResult"></div>
+
+<script>
+
+  function calculateDiscount() {
+    var b = Number(document.getElementById('bill').value) || 0;
+    var rate = 0;
+    if (b > 5000) {
+      rate = 0.20;
+    } else if (b > 1000) {
+      rate = 0.10;
+    } else {
+      rate = 0;
+    }
+    var finalAmount = b - (b * rate);
+    var out = 'Original: ₹' + b.toFixed(2) + 
+              ' • Discount: ' + (rate*100) + '% • Final: ₹' + finalAmount.toFixed(2);
+    document.getElementById('discountResult').textContent = out;
+  }
+  function showDay() {
+    var n = Number(document.getElementById('dayNum').value);
+    var out = '';
+    switch (n) {
+      case 1: out = 'Monday'; break;
+      case 2: out = 'Tuesday'; break;
+      case 3: out = 'Wednesday'; break;
+      case 4: out = 'Thursday'; break;
+      case 5: out = 'Friday'; break;
+      case 6: out = 'Saturday'; break;
+      case 7: out = 'Sunday'; break;
+      default: out = 'Invalid day';
+    }
+    document.getElementById('dayResult').textContent = out;
+  }
+  function printTable() {
+    var x = document.getElementById('tableNum').value;
+    var n = x === '' ? 5 : Number(x);
+    var out = '';
+    for (var i = 1; i <= 10; i++) {
+      out += n + ' x ' + i + ' = ' + (n * i) + '\n';
+    }
+    document.getElementById('tableResult').textContent = out;
+  }
+  function sumNumbers() {
+    var x = document.getElementById('limit').value;
+    var limit = x === '' ? 50 : Number(x);
+    if (limit < 1) {
+      document.getElementById('sumResult').textContent = 'Enter a positive limit';
+      return;
+    }
+    var sum = 0;
+    var i = 1;
+    while (i <= limit) {
+      sum += i;
+      i++;
+    }
+    document.getElementById('sumResult').textContent = 'Sum from 1 to ' + limit + ' is ' + sum;
+  }
+</script>
+</body>
+</html>
+
